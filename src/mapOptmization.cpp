@@ -164,7 +164,7 @@ public:
 
         subCloud = nh.subscribe<lio_sam::cloud_info>("lio_sam/feature/cloud_info", 1, &mapOptimization::laserCloudInfoHandler, this, ros::TransportHints().tcpNoDelay());
         subGPS   = nh.subscribe<nav_msgs::Odometry> (gpsTopic, 200, &mapOptimization::gpsHandler, this, ros::TransportHints().tcpNoDelay());
-        subLoop  = nh.subscribe<std_msgs::Float64MultiArray>("lio_loop/to_be_added", 1, &mapOptimization::loopInfoHandler, this, ros::TransportHints().tcpNoDelay());
+        subLoop  = nh.subscribe<std_msgs::Float64MultiArray>("lio_loop/loop_closure_detection", 1, &mapOptimization::loopInfoHandler, this, ros::TransportHints().tcpNoDelay());
 
         pubHistoryKeyFrames   = nh.advertise<sensor_msgs::PointCloud2>("lio_sam/mapping/icp_loop_closure_history_cloud", 1);
         pubIcpKeyFrames       = nh.advertise<sensor_msgs::PointCloud2>("lio_sam/mapping/icp_loop_closure_corrected_cloud", 1);
@@ -618,7 +618,7 @@ public:
         loopKeyCur = cloudSize - 1;
         for (int i = cloudSize - 1; i >= 0; --i)
         {
-            if (copy_cloudKeyPoses6D->points[i].time > loopTimeCur)
+            if (copy_cloudKeyPoses6D->points[i].time >= loopTimeCur)
                 loopKeyCur = round(copy_cloudKeyPoses6D->points[i].intensity);
             else
                 break;
@@ -628,7 +628,7 @@ public:
         loopKeyPre = 0;
         for (int i = 0; i < cloudSize; ++i)
         {
-            if (copy_cloudKeyPoses6D->points[i].time < loopTimePre)
+            if (copy_cloudKeyPoses6D->points[i].time <= loopTimePre)
                 loopKeyPre = round(copy_cloudKeyPoses6D->points[i].intensity);
             else
                 break;
